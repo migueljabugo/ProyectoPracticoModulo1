@@ -11,14 +11,29 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
         static void Main(string[] args)
         {
             GameServices.TestData();
-            Console.WriteLine("Exportando datos.");
-            GameServices.Export();
-
-            Console.WriteLine("Importando datos. \nFalta importar la ultima linea.");
+            //GameServices.Export();
+            /*
+             * Console.WriteLine("Importando datos.");
             GameServices.Import();
+            Console.WriteLine("Games:\n");
+            */
+            /*foreach (Game game in GameServices.Games)
+            {
+                Console.WriteLine(game);
+            }
+            Console.WriteLine("Players:\n");
+            foreach (Player player in GameServices.Players)
+            {
+                Console.WriteLine(player);
+            }*/
 
+            
+            GameServices.Console();
 
-            Console.ReadLine();
+            
+            
+
+            
         }
     }
 }

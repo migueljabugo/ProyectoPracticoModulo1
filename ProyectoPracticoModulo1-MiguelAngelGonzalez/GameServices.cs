@@ -12,13 +12,13 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
         private const string NAME_FILE = "../../data.txt";
         private const string SEPARADOR = "*+*+*+*";
 
-        private static List<Player> players;
+        private static List<Player> players = new List<Player>();
         public static List<Player> Players
         {
             get { return players; }
         }
 
-        private static List<Game> games;
+        private static List<Game> games = new List<Game>();
         public static List<Game> Games
         {
             get { return games; }
@@ -82,7 +82,8 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
             {
                 foreach (Platforms platform in game.Rankings.Keys)
                 {
-                    result += string.Format("{0}-{1}-", game.Name, game.Rankings[platform].Name);
+                    //Dado que para importar toda la informacion de los rankings se ha exportado tambien la plataforma.
+                    result += string.Format("{0}-{1}-{2}-", game.Name, (int)platform, game.Rankings[platform].Name);
                     foreach (Score score in game.Rankings[platform].Scores)
                     {
                         result += string.Format("{0}={1},", score.Nickname, score.Points);
@@ -149,6 +150,8 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
             List<string> linesFile = ReadFile();
             List<Player> listPlayers = new List<Player>();
             List<Game> listGames = new List<Game>();
+            List<string> listStringGames = new List<string>();
+            List<string> listStringRankings = new List<string>();
             int paso = 0;
 
             foreach (string line in linesFile)
@@ -165,16 +168,58 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
                             listPlayers.Add(new Player(line));
                             break;
                         case 1:
-                            listGames.Add(new Game(line));
+                            listStringGames.Add(line);
                             break;
                         case 2:
-
+                            listStringRankings.Add(line);
                             break;
                         default:
                             break;
                     }
                 }
             }
+
+            foreach (String lineGame in listStringGames)
+            {
+                Game game = new Game(lineGame);
+                foreach (string line in listStringRankings)
+                {
+                    string[] dataRanking = line.Split('-');
+                    if (dataRanking[0] == game.Name)
+                    {
+                        Ranking ranking = new Ranking(dataRanking[2], new List<Score>());
+                        string[] dataScores = dataRanking[3].Split(',');
+                        foreach (string dataPlayer in dataScores)
+                        {
+                            string[] player = dataPlayer.Split('=');
+                            if (player[0]!="")
+                            {
+                                ranking.Scores.Add(new Score(player[0], int.Parse(player[1])));
+                            }
+                        }
+                        //Recogemos la plataforma para poder construir el diccionario correctamente.
+                        if (!game.Rankings.ContainsKey(Platforms.Linux))
+                        {
+                            game.Rankings.Add((Platforms)int.Parse(dataRanking[1]), ranking);
+                        }
+                        else
+                        {
+                            game.Rankings[(Platforms)int.Parse(dataRanking[1])] = ranking;
+                        }
+                        
+                    }
+
+                    listGames.Add(game);
+                }
+                
+            }
+
+            
+
+            players = listPlayers;
+            games = listGames;
+
+
         }
 
         //Funciones
@@ -197,18 +242,19 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
         /**
          * Funcion 2
          */
-        public static int ScoresOfRankingOfGame(string rankingName, string name)
+        public static int ScoresOfRankingOfGame(string rankingName, string gameName)
         {
             int result = 0;
             foreach (Game game in Games)
             {
-                if (game.Name == name)
+                if (game.Name.ToLower() == gameName.ToLower())
                 {
                     foreach (Platforms platform in game.Rankings.Keys)
                     {
-                        if (rankingName == game.Rankings[platform].Name)
+                        if (rankingName.ToLower() == game.Rankings[platform].Name.ToLower())
                         {
-                            result++;
+
+                            result += game.Rankings[platform].Scores.Count;
                         }
 
                     }
@@ -225,7 +271,7 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
             int result = 0;
             foreach (Game game in Games)
             {
-                if (game.Genre == (Genres)Enum.Parse(typeof(Genres), stringGenre))
+                if (game.Genre.ToString().ToLower() == stringGenre.ToLower())
                 {
                     result++;
                 }
@@ -330,10 +376,10 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
             string line = "";
             while (line != "exit")
             {
+                System.Console.WriteLine("Introduce un comando:");
                 line = System.Console.ReadLine();
                 line.ToLower();
                 string[] comand = line.Split(' ');
-
 
                 switch (comand[0])
                 {
@@ -357,13 +403,23 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
                         Dictionary<Player, List<Game>> gamesByPlayer = ListOfGamesOfPlayer();
                         foreach (Player player in gamesByPlayer.Keys)
                         {
+                            Game compareGame = null;
                             result += string.Format("->{0}:\n========> ", player.Nickname);
                             foreach (Game game in gamesByPlayer[player])
                             {
-                                result += game.Name;
+                                if (compareGame == null || !compareGame.Equals(game))
+                                {
+                                    compareGame = game;
+                                    result += game.Name + ",";
+                                }
+                                else
+                                {
+
+                                }
                             }
                             result += "\n";
                         }
+                        System.Console.WriteLine(result);
                         break;
                     case "exit":
                         line = "exit";
@@ -371,9 +427,6 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
                     default:
                         break;
                 }
-
-
-
             }
         }
 

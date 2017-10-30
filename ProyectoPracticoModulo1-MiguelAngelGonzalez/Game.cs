@@ -61,6 +61,8 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
                 if (platformString != "")
                     this.platform.Add((Platforms)int.Parse(platformString));
             }
+            this.rankings = new Dictionary<Platforms, Ranking>();
+            
         }
 
         public override bool Equals(object obj)
@@ -85,11 +87,14 @@ namespace ProyectoPracticoModulo1_MiguelAngelGonzalez
                 result += platform + ", ";
             }
             result += string.Format(" - {0} ---\n   Rankings:\n", Genre);
-            foreach (Platforms platform in Rankings.Keys)
+            if (Rankings != null)
             {
-                result += string.Format("       - {0} ({1})\n", Rankings[platform].Name, Rankings[platform].Scores);
-
+                foreach (Platforms platform in Rankings.Keys)
+                {
+                    result += string.Format("       - {0} ({1})\n", Rankings[platform].Name, Rankings[platform].Scores.Count);
+                }
             }
+            
             return result;
         }
 
